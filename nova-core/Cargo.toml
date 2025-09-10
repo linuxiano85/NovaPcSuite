@@ -11,9 +11,14 @@ description = "Core application for NovaPcSuite"
 name = "nova"
 path = "src/main.rs"
 
+[[bin]]
+name = "demo"
+path = "src/demo.rs"
+
 [dependencies]
 nova-plugin-api = { path = "../nova-plugin-api" }
 nova-ui = { path = "../nova-ui" }
+example-plugin = { path = "../plugins/example-plugin" }
 
 tokio = { workspace = true }
 serde = { workspace = true }
