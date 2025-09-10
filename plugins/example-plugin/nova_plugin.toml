@@ -1,0 +1,18 @@
+id = "example-plugin"
+name = "Example Plugin"
+version = "1.0.0"
+api_version = 1
+authors = ["NovaPcSuite Contributors"]
+description = "An example plugin demonstrating the plugin architecture"
+categories = ["backup", "analysis"]
+
+[capabilities]
+file_system_access = true
+network_access = false
+system_info_access = true
+backup_events = true
+ui_panels = false
+config_ui = true
+
+[dependencies]
+# Example plugin has no external dependencies
