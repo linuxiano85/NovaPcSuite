@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaPcSuite</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background-color: #2d2d2d;
+            padding: 20px;
+            border-right: 1px solid #404040;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #ffffff;
+            border-bottom: 2px solid #4a90e2;
+            padding-bottom: 10px;
+        }
+        
+        .device-card {
+            background-color: #2d2d2d;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #404040;
+        }
+        
+        .device-card:hover {
+            border-color: #4a90e2;
+        }
+        
+        .button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .button:hover {
+            background-color: #357abd;
+        }
+        
+        .button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #404040;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #4a90e2;
+            transition: width 0.3s ease;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #404040;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background-color: transparent;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            color: #4a90e2;
+            border-bottom-color: #4a90e2;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .file-item {
+            padding: 5px;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .status.connected {
+            background-color: #27ae60;
+        }
+        
+        .status.root {
+            background-color: #e74c3c;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Devices</h2>
+            <div id="devices-list">
+                <p>Loading devices...</p>
+            </div>
+            <button class="button" onclick="refreshDevices()">Refresh</button>
+        </div>
+        
+        <div class="main-content">
+            <div class="section">
+                <h1>NovaPcSuite</h1>
+                <p>Linux-first Android device management</p>
+            </div>
+            
+            <div class="section" id="scan-section">
+                <h2>Device Scan</h2>
+                <button class="button" id="scan-button" onclick="startScan()" disabled>Start Scan</button>
+                <div id="scan-progress" class="hidden">
+                    <p id="scan-status">Initializing...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section" id="results-section" class="hidden">
+                <h2>Scan Results</h2>
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('summary')">Summary</button>
+                    <button class="tab" onclick="showTab('categories')">Categories</button>
+                    <button class="tab" onclick="showTab('duplicates')">Duplicates</button>
+                </div>
+                
+                <div class="tab-content active" id="summary-tab">
+                    <div id="scan-summary">
+                        <p>No scan results yet</p>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="categories-tab">
+                    <div id="categories-content">
+                        <p>No categories data yet</p>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="duplicates-tab">
+                    <div id="duplicates-content">
+                        <p>No duplicates analysis yet</p>
+                        <button class="button" onclick="detectDuplicates()">Detect Duplicates</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Contact Export</h2>
+                <button class="button" onclick="exportContacts('vcf')">Export VCF</button>
+                <button class="button" onclick="exportContacts('csv')">Export CSV</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { invoke } = window.__TAURI__.tauri;
+        const { save } = window.__TAURI__.dialog;
+        
+        let currentDevice = null;
+        let scanInProgress = false;
+        
+        async function refreshDevices() {
+            try {
+                const devices = await invoke('list_devices');
+                const devicesList = document.getElementById('devices-list');
+                
+                if (devices.length === 0) {
+                    devicesList.innerHTML = '<p>No devices connected</p>';
+                    document.getElementById('scan-button').disabled = true;
+                    return;
+                }
+                
+                devicesList.innerHTML = devices.map(device => `
+                    <div class="device-card" onclick="selectDevice('${device.serial}')">
+                        <h4>${device.manufacturer} ${device.model}</h4>
+                        <p>Serial: ${device.serial}</p>
+                        <p>Android: ${device.android_version}</p>
+                        <div>
+                            <span class="status connected">Connected</span>
+                            ${device.root_available ? '<span class="status root">Root</span>' : ''}
+                        </div>
+                    </div>
+                `).join('');
+                
+                if (!currentDevice && devices.length > 0) {
+                    selectDevice(devices[0].serial);
+                }
+            } catch (error) {
+                console.error('Failed to refresh devices:', error);
+                document.getElementById('devices-list').innerHTML = '<p>Error loading devices</p>';
+            }
+        }
+        
+        function selectDevice(serial) {
+            currentDevice = serial;
+            document.getElementById('scan-button').disabled = false;
+            
+            // Update UI to show selected device
+            const cards = document.querySelectorAll('.device-card');
+            cards.forEach(card => {
+                card.style.borderColor = card.onclick.toString().includes(serial) ? '#4a90e2' : '#404040';
+            });
+        }
+        
+        async function startScan() {
+            if (!currentDevice || scanInProgress) return;
+            
+            scanInProgress = true;
+            document.getElementById('scan-button').disabled = true;
+            document.getElementById('scan-progress').classList.remove('hidden');
+            
+            try {
+                await invoke('scan_device', {
+                    request: {
+                        device_serial: currentDevice,
+                        include_paths: [
+                            '/storage/emulated/0/DCIM',
+                            '/storage/emulated/0/Pictures',
+                            '/storage/emulated/0/Movies',
+                            '/storage/emulated/0/Music',
+                            '/storage/emulated/0/Documents'
+                        ],
+                        compute_hashes: false
+                    }
+                });
+                
+                // Start polling for progress
+                pollScanProgress();
+            } catch (error) {
+                console.error('Failed to start scan:', error);
+                scanInProgress = false;
+                document.getElementById('scan-button').disabled = false;
+                document.getElementById('scan-progress').classList.add('hidden');
+            }
+        }
+        
+        async function pollScanProgress() {
+            if (!scanInProgress) return;
+            
+            try {
+                const progress = await invoke('get_scan_progress');
+                if (progress) {
+                    updateScanProgress(progress);
+                    
+                    if (progress.phase === 'Complete') {
+                        scanInProgress = false;
+                        document.getElementById('scan-button').disabled = false;
+                        document.getElementById('scan-progress').classList.add('hidden');
+                        await loadScanResults();
+                        return;
+                    }
+                }
+                
+                // Continue polling
+                setTimeout(pollScanProgress, 1000);
+            } catch (error) {
+                console.error('Failed to get scan progress:', error);
+                scanInProgress = false;
+                document.getElementById('scan-button').disabled = false;
+                document.getElementById('scan-progress').classList.add('hidden');
+            }
+        }
+        
+        function updateScanProgress(progress) {
+            const status = document.getElementById('scan-status');
+            const progressFill = document.getElementById('progress-fill');
+            
+            status.textContent = `${progress.phase}: ${progress.files_scanned} files scanned`;
+            
+            // Simple progress calculation based on phase
+            let percentage = 0;
+            switch (progress.phase) {
+                case 'Discovering': percentage = 10; break;
+                case 'Scanning': percentage = 30 + (progress.files_scanned / Math.max(1, progress.files_scanned)) * 40; break;
+                case 'Categorizing': percentage = 80; break;
+                case 'Hashing': percentage = 90; break;
+                case 'Complete': percentage = 100; break;
+            }
+            
+            progressFill.style.width = `${percentage}%`;
+        }
+        
+        async function loadScanResults() {
+            try {
+                const result = await invoke('get_scan_result');
+                if (result) {
+                    displayScanResults(result);
+                    document.getElementById('results-section').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Failed to load scan results:', error);
+            }
+        }
+        
+        function displayScanResults(result) {
+            const summary = document.getElementById('scan-summary');
+            summary.innerHTML = `
+                <h3>Scan Summary</h3>
+                <p><strong>Total Files:</strong> ${result.summary.total_files}</p>
+                <p><strong>Total Size:</strong> ${formatBytes(result.summary.total_size)}</p>
+                <p><strong>Scan Duration:</strong> ${result.summary.scan_duration_ms}ms</p>
+            `;
+            
+            const categories = document.getElementById('categories-content');
+            const categoryList = Object.entries(result.summary.categories)
+                .map(([category, count]) => `<p><strong>${category}:</strong> ${count} files</p>`)
+                .join('');
+            categories.innerHTML = `<h3>File Categories</h3>${categoryList}`;
+        }
+        
+        async function detectDuplicates() {
+            try {
+                const duplicates = await invoke('detect_duplicates');
+                if (duplicates) {
+                    displayDuplicates(duplicates);
+                }
+            } catch (error) {
+                console.error('Failed to detect duplicates:', error);
+            }
+        }
+        
+        function displayDuplicates(duplicates) {
+            const content = document.getElementById('duplicates-content');
+            content.innerHTML = `
+                <h3>Duplicate Detection Results</h3>
+                <p><strong>Duplicate Groups:</strong> ${duplicates.groups.length}</p>
+                <p><strong>Total Duplicates:</strong> ${duplicates.total_duplicates}</p>
+                <p><strong>Potential Savings:</strong> ${formatBytes(duplicates.total_savings)}</p>
+                <div>
+                    ${duplicates.groups.slice(0, 10).map(group => `
+                        <div class="file-item">
+                            <span>${group.files.length} files of size ${formatBytes(group.size)}</span>
+                            <span>Save: ${formatBytes(group.potential_savings)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        async function exportContacts(format) {
+            if (!currentDevice) return;
+            
+            try {
+                const filePath = await save({
+                    defaultPath: `contacts.${format}`,
+                    filters: [{
+                        name: format.toUpperCase(),
+                        extensions: [format]
+                    }]
+                });
+                
+                if (filePath) {
+                    const result = await invoke('export_contacts', {
+                        request: {
+                            device_serial: currentDevice,
+                            output_path: filePath,
+                            format: format
+                        }
+                    });
+                    alert(`Contacts exported: ${result}`);
+                }
+            } catch (error) {
+                console.error('Failed to export contacts:', error);
+                alert('Failed to export contacts');
+            }
+        }
+        
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Add active class to selected tab
+            event.target.classList.add('active');
+        }
+        
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', refreshDevices);
+    </script>
+</body>
+</html>

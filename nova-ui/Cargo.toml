@@ -1,0 +1,32 @@
+[package]
+name = "nova-ui"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+homepage.workspace = true
+repository.workspace = true
+
+[lib]
+name = "nova_ui"
+crate-type = ["cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+nova-core.workspace = true
+nova-adb.workspace = true
+nova-backup.workspace = true
+nova-formats.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+tauri = { version = "1.5", features = ["api-all"] }
+tokio.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+
+[features]
+# This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]

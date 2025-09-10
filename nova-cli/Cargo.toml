@@ -1,0 +1,24 @@
+[package]
+name = "nova-cli"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+homepage.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "nova-cli"
+path = "src/main.rs"
+
+[dependencies]
+nova-core.workspace = true
+nova-adb.workspace = true
+nova-backup.workspace = true
+nova-formats.workspace = true
+tokio.workspace = true
+clap.workspace = true
+tracing.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
