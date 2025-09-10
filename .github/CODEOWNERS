@@ -1,0 +1,56 @@
+# CODEOWNERS file for NovaPcSuite
+# Defines ownership for critical directories to ensure proper review traceability
+# 
+# @linuxiano85 is granted ownership over all critical components for comprehensive
+# oversight of the codebase, especially for security-sensitive areas like encryption,
+# backup/restore functionality, and core architecture.
+
+# Global ownership (fallback for any unspecified files)
+* @linuxiano85
+
+# Core application directories - requires careful review for architecture changes
+/nova-core/ @linuxiano85
+/nova-plugin-api/ @linuxiano85
+/nova-ui/ @linuxiano85
+
+# Plugin ecosystem - important for extensibility and security model
+/plugins/ @linuxiano85
+
+# Critical functional areas requiring security oversight
+# Note: These paths are future-proofed for planned directory structure
+
+# Backup functionality - data integrity critical
+backup/ @linuxiano85
+restore/ @linuxiano85
+recovery/ @linuxiano85
+
+# Security-sensitive components
+encryption/ @linuxiano85
+crypto/ @linuxiano85
+
+# Integration points that may affect system security
+telephony/ @linuxiano85
+transport/ @linuxiano85
+
+# Core scheduling and automation
+scheduler/ @linuxiano85
+
+# Configuration and documentation - affects user security practices
+/docs/ @linuxiano85
+*.md @linuxiano85
+
+# Build and automation configuration - CI/CD security
+/.github/ @linuxiano85
+/Cargo.toml @linuxiano85
+/Cargo.lock @linuxiano85
+
+# License and legal files
+/LICENSE @linuxiano85
+/CONTRIBUTING* @linuxiano85
+
+# Any security-related or sensitive configuration files
+*.yml @linuxiano85
+*.yaml @linuxiano85
+*.toml @linuxiano85
+*.json @linuxiano85
+.gitignore @linuxiano85

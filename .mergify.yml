@@ -1,0 +1,179 @@
+# Mergify Configuration for NovaPcSuite
+# Optional configuration that replicates auto-merge logic for users who enable Mergify service
+# This file is inert unless Mergify is explicitly enabled for the repository
+
+pull_request_rules:
+  # Auto-merge rule - matches the GitHub Actions auto-merge workflow logic
+  - name: Auto-merge when ready
+    conditions:
+      # Must have the merge-ready label
+      - label=status:merge-ready
+      
+      # Must not have blocking labels
+      - -label=status:wip
+      - -label=status:blocked
+      
+      # Must not be a draft
+      - -draft
+      
+      # Must be mergeable (no conflicts)
+      - mergeable
+      
+      # Future: CI checks (placeholder for when build pipeline exists)
+      # - check-success=build
+      
+    actions:
+      merge:
+        # Use squash merge strategy to maintain clean history
+        method: squash
+        
+        # Automatically delete the feature branch after merge
+        delete_head_branch: {}
+        
+        # Use PR title and description for commit message
+        commit_message_template: |
+          {{ title }} (#{{ number }})
+          
+          {{ body }}
+
+  # Auto-approve for dependency updates (when using dependabot)
+  - name: Auto-approve dependency updates
+    conditions:
+      - author=dependabot[bot]
+      - label=automation:dependencies
+      
+      # Only minor and patch updates, not major
+      - -title~=^\[Security\]
+      - title~=^(build\(deps\)|chore\(deps\))
+      
+    actions:
+      review:
+        type: APPROVE
+        message: "🤖 Auto-approved dependency update"
+
+  # Auto-label based on file changes
+  - name: Label documentation changes
+    conditions:
+      - files~=\.(md|rst|txt)$
+    actions:
+      label:
+        add:
+          - type:docs
+          - area:docs
+
+  - name: Label CI/CD changes
+    conditions:
+      - files~=^\.github/
+      - files~=\.(yml|yaml)$
+    actions:
+      label:
+        add:
+          - type:ci
+
+  - name: Label plugin system changes
+    conditions:
+      - files~=^nova-plugin-api/
+      - files~=^plugins/
+    actions:
+      label:
+        add:
+          - area:plugin-system
+
+  - name: Label UI changes
+    conditions:
+      - files~=^nova-ui/
+    actions:
+      label:
+        add:
+          - area:ui
+
+  - name: Label core changes
+    conditions:
+      - files~=^nova-core/
+    actions:
+      label:
+        add:
+          - area:core
+
+  # Automatic size labeling based on changes
+  - name: Label size XS
+    conditions:
+      - changes<10
+    actions:
+      label:
+        add:
+          - size:xs
+
+  - name: Label size S
+    conditions:
+      - changes>=10
+      - changes<50
+    actions:
+      label:
+        add:
+          - size:s
+
+  - name: Label size M
+    conditions:
+      - changes>=50
+      - changes<200
+    actions:
+      label:
+        add:
+          - size:m
+
+  - name: Label size L
+    conditions:
+      - changes>=200
+      - changes<500
+    actions:
+      label:
+        add:
+          - size:l
+
+  - name: Label size XL
+    conditions:
+      - changes>=500
+    actions:
+      label:
+        add:
+          - size:xl
+
+  # Security and compliance checks
+  - name: Flag potential security changes
+    conditions:
+      - files~=(security|auth|crypto|encrypt|password|token|secret)
+    actions:
+      label:
+        add:
+          - security:sensitive
+      comment:
+        message: |
+          🔒 **Security Alert**
+          
+          This PR modifies files that may contain security-sensitive code.
+          Please ensure:
+          - [ ] Security review has been conducted
+          - [ ] No secrets or credentials are exposed
+          - [ ] Changes follow security best practices
+          - [ ] Tests include security scenarios
+
+  # Breaking change detection
+  - name: Flag potential breaking changes
+    conditions:
+      - files~=^nova-plugin-api/
+      - body~=(?i)(breaking|break|incompatible)
+    actions:
+      label:
+        add:
+          - risk:breaking
+      comment:
+        message: |
+          ⚠️ **Potential Breaking Change Detected**
+          
+          This PR appears to modify the plugin API and mentions breaking changes.
+          Please ensure:
+          - [ ] Breaking changes are documented
+          - [ ] Migration guide is provided
+          - [ ] Version bump is planned
+          - [ ] Deprecation notices are added where appropriate

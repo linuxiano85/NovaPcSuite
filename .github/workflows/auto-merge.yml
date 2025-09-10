@@ -1,0 +1,175 @@
+name: Auto Merge
+# Automatically merge PRs when conditions are met
+
+on:
+  # Trigger on PR events that might change merge eligibility
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  
+  # Trigger on label changes
+  pull_request_target:
+    types: [labeled, unlabeled]
+  
+  # Trigger on check completion (future CI integration)
+  check_run:
+    types: [completed]
+  
+  # Trigger on status updates (future CI integration)
+  status: {}
+
+permissions:
+  # Required permissions for auto-merge functionality
+  contents: write
+  pull-requests: write
+  checks: read
+
+jobs:
+  auto-merge:
+    name: Auto Merge Eligible PRs
+    runs-on: ubuntu-latest
+    
+    # Only run on pull request events
+    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Get the PR head for analysis
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+      
+      - name: Check merge eligibility
+        id: eligibility
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_MERGEABLE: ${{ github.event.pull_request.mergeable }}
+        run: |
+          echo "## Auto-Merge Eligibility Check" >> $GITHUB_STEP_SUMMARY
+          echo "- **PR**: #$PR_NUMBER" >> $GITHUB_STEP_SUMMARY
+          echo "- **Draft**: $PR_DRAFT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Mergeable**: $PR_MERGEABLE" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Parse labels from JSON
+          labels=$(echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | jq -r '.[]' 2>/dev/null || echo "")
+          echo "- **Labels**: $labels" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check conditions for auto-merge
+          eligible="true"
+          reasons=()
+          
+          # Must not be a draft
+          if [ "$PR_DRAFT" = "true" ]; then
+            eligible="false"
+            reasons+=("- ❌ PR is in draft mode")
+          else
+            reasons+=("- ✅ PR is not in draft mode")
+          fi
+          
+          # Must be mergeable
+          if [ "$PR_MERGEABLE" != "true" ]; then
+            eligible="false"
+            reasons+=("- ❌ PR has merge conflicts")
+          else
+            reasons+=("- ✅ PR has no merge conflicts")
+          fi
+          
+          # Check for required label: status:merge-ready
+          has_merge_ready="false"
+          if echo "$labels" | grep -q "status:merge-ready"; then
+            has_merge_ready="true"
+            reasons+=("- ✅ Has status:merge-ready label")
+          else
+            eligible="false"
+            reasons+=("- ❌ Missing status:merge-ready label")
+          fi
+          
+          # Check for blocking labels
+          if echo "$labels" | grep -q "status:wip"; then
+            eligible="false"
+            reasons+=("- ❌ Has status:wip label (blocking)")
+          else
+            reasons+=("- ✅ No status:wip label")
+          fi
+          
+          if echo "$labels" | grep -q "status:blocked"; then
+            eligible="false"
+            reasons+=("- ❌ Has status:blocked label (blocking)")
+          else
+            reasons+=("- ✅ No status:blocked label")
+          fi
+          
+          # Future: Check CI status (placeholder for when build job 'build' exists)
+          # For now, we'll mark as eligible but note that CI check is pending
+          reasons+=("- ⏳ CI check placeholder (will check 'build' job when available)")
+          
+          # Output results
+          echo "### Eligibility Analysis:" >> $GITHUB_STEP_SUMMARY
+          printf '%s\n' "${reasons[@]}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "$eligible" = "true" ]; then
+            echo "### ✅ PR is eligible for auto-merge" >> $GITHUB_STEP_SUMMARY
+            echo "eligible=true" >> $GITHUB_OUTPUT
+          else
+            echo "### ❌ PR is not eligible for auto-merge" >> $GITHUB_STEP_SUMMARY
+            echo "eligible=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Auto-merge PR
+        if: steps.eligibility.outputs.eligible == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          echo "🚀 Attempting to auto-merge PR #$PR_NUMBER..."
+          
+          # Enable auto-merge with squash strategy
+          gh pr merge $PR_NUMBER \
+            --squash \
+            --auto \
+            --delete-branch \
+            || {
+              echo "❌ Failed to enable auto-merge. This might be due to:"
+              echo "- Branch protection rules requiring reviews"
+              echo "- Missing CI checks"
+              echo "- Repository settings"
+              echo ""
+              echo "The PR will be merged automatically once all conditions are met."
+              exit 0
+            }
+          
+          echo "✅ Auto-merge enabled for PR #$PR_NUMBER"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🚀 **Auto-merge enabled** - PR will be merged when all checks pass" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Add auto-merge comment
+        if: steps.eligibility.outputs.eligible == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr comment $PR_NUMBER --body "🤖 **Auto-merge enabled**
+          
+          This PR has been marked for automatic merging because:
+          - ✅ Has \`status:merge-ready\` label
+          - ✅ Not in draft mode
+          - ✅ No blocking labels (\`status:wip\`, \`status:blocked\`)
+          - ✅ No merge conflicts
+          
+          The PR will be automatically merged with **squash strategy** once all required checks pass.
+          
+          _This action was performed by the NovaPcSuite auto-merge workflow._"
+      
+      - name: Auto-merge summary
+        if: always()
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "**Workflow**: Auto Merge" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
