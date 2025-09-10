@@ -1,0 +1,60 @@
+# Rust
+/target/
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Logs
+*.log
+
+# Runtime data
+backup-data/
+test-output/
+*.db
+*.sqlite
+
+# Environment
+.env
+.env.local
+.env.production
+.env.staging
+
+# Documentation builds
+book/
+docs/build/
+
+# macOS
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.fuse_hidden*
+.Trash-*
+.nfs*
+
+# Windows
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Lock files (except Cargo.lock for applications)
+package-lock.json
+yarn.lock

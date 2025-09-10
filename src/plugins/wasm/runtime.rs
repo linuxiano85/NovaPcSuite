@@ -4,18 +4,25 @@
 //! sandboxing, resource limits, and host function integration.
 
 #[cfg(feature = "wasm-plugins")]
-use wasmtime::{Engine, Module, Store, Instance, Func, Caller, AsContextMut};
+use wasmtime::{Engine, Caller};
 use anyhow::Result;
 use std::path::Path;
 use std::collections::HashMap;
 
 /// WASM runtime for plugin execution
-#[derive(Debug)]
 pub struct WasmRuntime {
     #[cfg(feature = "wasm-plugins")]
     engine: Engine,
     
     plugins: HashMap<String, PluginInfo>,
+}
+
+impl std::fmt::Debug for WasmRuntime {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WasmRuntime")
+            .field("plugins", &self.plugins)
+            .finish()
+    }
 }
 
 /// Information about a loaded plugin
@@ -148,7 +155,7 @@ pub struct HostFunctions;
 impl HostFunctions {
     /// Log a message from a plugin
     #[cfg(feature = "wasm-plugins")]
-    pub fn plugin_log(caller: Caller<'_, ()>, level: i32, message_ptr: i32, message_len: i32) -> Result<()> {
+    pub fn plugin_log(_caller: Caller<'_, ()>, level: i32, message_ptr: i32, message_len: i32) -> Result<()> {
         // In a real implementation, this would:
         // 1. Read the message from WASM memory
         // 2. Validate the log level
@@ -161,7 +168,7 @@ impl HostFunctions {
 
     /// Read a file (with permission checking)
     #[cfg(feature = "wasm-plugins")]
-    pub fn read_file(caller: Caller<'_, ()>, path_ptr: i32, path_len: i32) -> Result<i32> {
+    pub fn read_file(_caller: Caller<'_, ()>, path_ptr: i32, path_len: i32) -> Result<i32> {
         // In a real implementation, this would:
         // 1. Read the file path from WASM memory
         // 2. Check plugin permissions
@@ -175,7 +182,7 @@ impl HostFunctions {
 
     /// Send an event to the platform event bus
     #[cfg(feature = "wasm-plugins")]
-    pub fn send_event(caller: Caller<'_, ()>, event_ptr: i32, event_len: i32) -> Result<()> {
+    pub fn send_event(_caller: Caller<'_, ()>, event_ptr: i32, event_len: i32) -> Result<()> {
         // In a real implementation, this would:
         // 1. Read the event data from WASM memory
         // 2. Deserialize the event
