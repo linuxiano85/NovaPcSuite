@@ -7,6 +7,9 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::info;
 
+#[cfg(feature = "cf")]
+pub mod util;
+
 #[tokio::main]
 async fn main() -> Result<()> {
     // Initialize tracing

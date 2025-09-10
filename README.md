@@ -11,6 +11,22 @@ A modular, extensible PC suite application with a first-class plugin architectur
 - **Configuration Management**: Per-plugin settings persistence
 - **API Versioning**: Ensure plugin compatibility across versions
 
+## Utilities
+
+### Italian Codice Fiscale Generator & Validator
+
+Generate and validate Italian tax codes (Codice Fiscale) for contact export enrichment and administrative purposes.
+
+```bash
+# Generate a tax code
+nova-cli cf generate --surname "Rossi" --name "Mario" --birth-date "1990-05-15" --sex "M" --comune "Roma"
+
+# Validate a tax code
+nova-cli cf validate "RSSMRA90E15H501S"
+```
+
+📖 See [detailed documentation](docs/util-codice-fiscale.md) for algorithm details, examples, and legal disclaimer.
+
 ## Architecture Overview
 
 NovaPcSuite is built around a core plugin system that allows developers to extend functionality in several categories:
