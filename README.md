@@ -137,6 +137,17 @@ We welcome contributions! Please see:
 - [CONTRIBUTING.md](CONTRIBUTING.md) for general contribution guidelines
 - [CONTRIBUTING-PLUGINS.md](CONTRIBUTING-PLUGINS.md) for plugin development
 
+## Automazione Repository
+
+NovaPcSuite utilizza un sistema di automazione avanzato per semplificare il processo di sviluppo:
+
+- **Gestione Label**: Tassonomia centralizzata con sincronizzazione automatica
+- **Auto-Merge**: Merge automatico condizionale basato su label e stato
+- **Code Ownership**: Revisioni strutturate per componenti critici
+- **Quality Gates**: Controlli e validazioni automatiche
+
+Per informazioni dettagliate su come utilizzare il sistema di automazione, consultare la [Guida all'Automazione](docs/automation.md).
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.

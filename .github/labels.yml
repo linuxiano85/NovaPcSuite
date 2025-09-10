@@ -1,0 +1,231 @@
+# Central Label Definition for NovaPcSuite
+# Comprehensive taxonomy with Italian descriptions for clarity
+
+# Type Labels - Tipo di modifica
+- name: "type:bug"
+  color: "d73a4a"
+  description: "Bug fix - Correzione di bug"
+
+- name: "type:feature"
+  color: "0e8a16"
+  description: "New feature - Nuova funzionalità"
+
+- name: "type:enhancement"
+  color: "84b6eb"
+  description: "Improvement to existing feature - Miglioramento di funzionalità esistente"
+
+- name: "type:docs"
+  color: "1d76db"
+  description: "Documentation changes - Modifiche alla documentazione"
+
+- name: "type:refactor"
+  color: "fbca04"
+  description: "Code refactoring - Refactoring del codice"
+
+- name: "type:test"
+  color: "c2e0c6"
+  description: "Test additions or improvements - Aggiunte o miglioramenti ai test"
+
+- name: "type:ci"
+  color: "0366d6"
+  description: "CI/CD pipeline changes - Modifiche pipeline CI/CD"
+
+- name: "type:chore"
+  color: "fef2c0"
+  description: "Maintenance tasks - Attività di manutenzione"
+
+# Area Labels - Area di competenza
+- name: "area:core"
+  color: "5319e7"
+  description: "Core application logic - Logica applicativa principale"
+
+- name: "area:plugin-system"
+  color: "7057ff"
+  description: "Plugin architecture and API - Architettura plugin e API"
+
+- name: "area:ui"
+  color: "d876e3"
+  description: "User interface components - Componenti interfaccia utente"
+
+- name: "area:backup"
+  color: "f9d0c4"
+  description: "Backup functionality - Funzionalità backup"
+
+- name: "area:restore"
+  color: "e99695"
+  description: "Restore functionality - Funzionalità ripristino"
+
+- name: "area:recovery"
+  color: "f85149"
+  description: "Data recovery features - Funzionalità recupero dati"
+
+- name: "area:encryption"
+  color: "bf8700"
+  description: "Encryption and security - Crittografia e sicurezza"
+
+- name: "area:telephony"
+  color: "006b75"
+  description: "Telephony integration - Integrazione telefonica"
+
+- name: "area:scheduler"
+  color: "0969da"
+  description: "Task scheduling - Pianificazione attività"
+
+- name: "area:config"
+  color: "1f883d"
+  description: "Configuration management - Gestione configurazione"
+
+- name: "area:transport"
+  color: "8250df"
+  description: "Data transport and sync - Trasporto e sincronizzazione dati"
+
+- name: "area:docs"
+  color: "0e8a16"
+  description: "Documentation - Documentazione"
+
+# Status Labels - Stato del lavoro
+- name: "status:wip"
+  color: "fbca04"
+  description: "Work in progress - Lavoro in corso"
+
+- name: "status:blocked"
+  color: "d93f0b"
+  description: "Blocked by dependencies - Bloccato da dipendenze"
+
+- name: "status:needs-review"
+  color: "0052cc"
+  description: "Needs code review - Richiede revisione codice"
+
+- name: "status:needs-testing"
+  color: "54473f"
+  description: "Needs testing - Richiede test"
+
+- name: "status:merge-ready"
+  color: "0e8a16"
+  description: "Ready for merge - Pronto per merge"
+
+- name: "status:on-hold"
+  color: "d876e3"
+  description: "On hold - In attesa"
+
+- name: "status:duplicate"
+  color: "cfd3d7"
+  description: "Duplicate issue/PR - Issue/PR duplicato"
+
+- name: "status:invalid"
+  color: "e4e669"
+  description: "Invalid or not reproducible - Non valido o non riproducibile"
+
+- name: "status:wontfix"
+  color: "ffffff"
+  description: "Will not be fixed - Non sarà risolto"
+
+# Priority Labels - Priorità
+- name: "priority:critical"
+  color: "b60205"
+  description: "Critical priority - Priorità critica"
+
+- name: "priority:high"
+  color: "d93f0b"
+  description: "High priority - Priorità alta"
+
+- name: "priority:medium"
+  color: "fbca04"
+  description: "Medium priority - Priorità media"
+
+- name: "priority:low"
+  color: "0e8a16"
+  description: "Low priority - Priorità bassa"
+
+# Risk Labels - Livello di rischio
+- name: "risk:breaking"
+  color: "d73a4a"
+  description: "Breaking change - Modifica breaking"
+
+- name: "risk:high"
+  color: "ff6b35"
+  description: "High risk change - Modifica ad alto rischio"
+
+- name: "risk:medium"
+  color: "f9d71c"
+  description: "Medium risk change - Modifica a rischio medio"
+
+- name: "risk:low"
+  color: "27d545"
+  description: "Low risk change - Modifica a basso rischio"
+
+# Security Labels - Sicurezza
+- name: "security:vulnerability"
+  color: "d73a4a"
+  description: "Security vulnerability - Vulnerabilità di sicurezza"
+
+- name: "security:audit"
+  color: "0052cc"
+  description: "Security audit required - Richiede audit di sicurezza"
+
+- name: "security:sensitive"
+  color: "f85149"
+  description: "Contains sensitive changes - Contiene modifiche sensibili"
+
+- name: "security:compliance"
+  color: "1f883d"
+  description: "Compliance related - Relativo alla conformità"
+
+# Automation Labels - Automazione
+- name: "automation:auto-merge"
+  color: "0e8a16"
+  description: "Eligible for auto-merge - Idoneo per auto-merge"
+
+- name: "automation:skip-ci"
+  color: "fef2c0"
+  description: "Skip CI pipeline - Salta pipeline CI"
+
+- name: "automation:release"
+  color: "5319e7"
+  description: "Related to release automation - Relativo automazione release"
+
+- name: "automation:dependencies"
+  color: "0366d6"
+  description: "Dependency updates - Aggiornamenti dipendenze"
+
+# Meta Labels - Meta informazioni
+- name: "meta:good-first-issue"
+  color: "7057ff"
+  description: "Good for newcomers - Adatto per principianti"
+
+- name: "meta:help-wanted"
+  color: "006b75"
+  description: "Extra attention needed - Richiede attenzione extra"
+
+- name: "meta:question"
+  color: "d876e3"
+  description: "Question or discussion - Domanda o discussione"
+
+- name: "meta:epic"
+  color: "3d1a78"
+  description: "Epic or large feature - Epic o funzionalità grande"
+
+- name: "meta:tracking"
+  color: "8b949e"
+  description: "Tracking issue - Issue di tracciamento"
+
+# Size Labels - Dimensione
+- name: "size:xs"
+  color: "c2e0c6"
+  description: "Extra small changes - Modifiche extra piccole"
+
+- name: "size:s"
+  color: "bfe5bf"
+  description: "Small changes - Modifiche piccole"
+
+- name: "size:m"
+  color: "fbca04"
+  description: "Medium changes - Modifiche medie"
+
+- name: "size:l"
+  color: "ff9500"
+  description: "Large changes - Modifiche grandi"
+
+- name: "size:xl"
+  color: "d93f0b"
+  description: "Extra large changes - Modifiche extra grandi"
