@@ -1,141 +1,184 @@
 # NovaPcSuite
 
-A modular, extensible PC suite application with a first-class plugin architecture built in Rust.
+A modular, extensible PC suite for Android device backup and restore on Linux, built with Python and GTK4.
+
+> **Note**: This project has pivoted from the previous Rust implementation (PR #72 canceled) to a Python-based architecture for better maintainability and cross-platform compatibility.
 
 ## Features
 
-- **Modular Plugin Architecture**: Extend functionality through community-driven plugins
-- **Safe Plugin Execution**: Sandbox capabilities with future WASM support
-- **Modern UI**: Built with egui for cross-platform compatibility
-- **Event-Driven**: Comprehensive event bus for plugin communication
-- **Configuration Management**: Per-plugin settings persistence
-- **API Versioning**: Ensure plugin compatibility across versions
-
-## Architecture Overview
-
-NovaPcSuite is built around a core plugin system that allows developers to extend functionality in several categories:
-
-- **Backup**: Backup analyzers, efficiency optimizers, custom backup strategies
-- **UI**: Custom panels, dashboards, configuration interfaces
-- **Analysis**: System analyzers, performance monitors, file analyzers
-- **Transport**: Cloud sync providers, network protocols, data transfer mechanisms
-- **Crypto**: Encryption strategies, key management, security plugins
-- **Integration**: Third-party service integrations, API connectors
+- **Device Management**: Connect and manage Android devices via ADB
+- **Full Backup**: Complete backup of device files with manifest tracking
+- **Incremental Restore**: Restore backed up files to device
+- **CLI Interface**: Command-line tools for automated workflows
+- **Modern GUI**: GTK4-based graphical interface with sidebar navigation
+- **Extensible Architecture**: Modular design for easy feature additions
 
 ## Quick Start
 
-### Running the Application
+### Prerequisites
+
+- Python 3.8+
+- Poetry (recommended) or pip
+- Android Platform Tools (ADB)
+- For GUI: GTK4 development libraries
+
+### Installation
+
+#### Using Poetry (Recommended)
 
 ```bash
 # Clone the repository
 git clone https://github.com/linuxiano85/NovaPcSuite.git
 cd NovaPcSuite
 
-# Build and run
-cargo run --bin nova
+# Install dependencies
+poetry install
+
+# For GUI support (optional)
+sudo apt-get install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adwaita-1
 ```
 
-### Building from Source
+#### Using pip
 
 ```bash
-# Build all workspace members
-cargo build
+# Clone the repository  
+git clone https://github.com/linuxiano85/NovaPcSuite.git
+cd NovaPcSuite
 
-# Run tests
-cargo test
-
-# Build in release mode
-cargo build --release
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-## Plugin Development
+### Usage
 
-See [CONTRIBUTING-PLUGINS.md](CONTRIBUTING-PLUGINS.md) for detailed information on developing plugins for NovaPcSuite.
+#### Command Line Interface
 
-### Quick Plugin Example
+```bash
+# Show device information
+poetry run novapcsuite device info
 
-```rust
-use nova_plugin_api::{NovaPlugin, PluginDescriptor, PluginContext, PluginResult, PluginHealth};
+# Create a backup
+poetry run novapcsuite backup create
 
-struct MyPlugin {
-    descriptor: PluginDescriptor,
-}
-
-impl NovaPlugin for MyPlugin {
-    fn descriptor(&self) -> &PluginDescriptor {
-        &self.descriptor
-    }
-
-    fn init(&mut self, ctx: &PluginContext) -> PluginResult<()> {
-        // Plugin initialization logic
-        Ok(())
-    }
-
-    fn shutdown(&mut self) -> PluginResult<()> {
-        // Cleanup logic
-        Ok(())
-    }
-
-    fn health_check(&self) -> PluginResult<PluginHealth> {
-        Ok(PluginHealth::Healthy)
-    }
-
-    fn as_any(&self) -> &dyn std::any::Any { self }
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any { self }
-}
+# Show help
+poetry run novapcsuite --help
 ```
 
-## Workspace Structure
+#### Graphical Interface
 
-- **nova-core**: Main application binary
-- **nova-plugin-api**: Plugin framework and API definitions
-- **nova-ui**: User interface components
-- **plugins/**: Example and community plugins
-  - **example-plugin**: Reference implementation demonstrating plugin architecture
+```bash
+# Launch GUI application
+poetry run novapcsuite-gui
+```
 
-## Plugin System Features
+## Architecture Overview
+
+NovaPcSuite is built around a modular Python architecture:
+
+- **nova/cli.py**: Command-line interface
+- **nova/adb/**: ADB client wrapper and device communication  
+- **nova/backup/**: Backup and restore functionality
+  - `scanner.py`: File scanning and categorization
+  - `executor.py`: Backup execution engine
+  - `restore.py`: Restore functionality
+  - `manifest.py`: Backup metadata models
+  - `storage.py`: Backup storage layout
+- **nova/gui/**: GTK4 graphical interface
+
+## Backup Features
 
 ### Current (v0.1.0)
 
-- ✅ Core plugin traits and lifecycle management
-- ✅ Static plugin loading (workspace members)
-- ✅ Plugin descriptor format (`nova_plugin.toml`)
-- ✅ Plugin registry with dependency resolution
-- ✅ Event bus for plugin communication
-- ✅ Configuration persistence
-- ✅ Extensions UI for plugin management
-- ✅ Capability-based security model (declarative)
+- ✅ ADB device detection and info collection
+- ✅ File scanning with whitelist support
+- ✅ Full backup with SHA256 verification
+- ✅ JSON manifest generation
+- ✅ CLI interface for device management
+- ✅ Basic GTK4 GUI framework
+- ✅ Backup storage organization (backups/{device}/{timestamp}/)
 
 ### Planned (Future Releases)
 
-- 🔄 Dynamic plugin loading (.so/.dylib) with security constraints
-- 🔄 WASM-based plugin execution sandbox
-- 🔄 Network permission gating enforcement
-- 🔄 Plugin store/marketplace UI
-- 🔄 Digital signature verification
-- 🔄 Hot plugin reloading
-- 🔄 Plugin dependency management
+- 🔄 Incremental backup support
+- 🔄 Progress bars and detailed statistics
+- 🔄 Backup verification and integrity checks
+- 🔄 Advanced GUI file browser
+- 🔄 Restore wizard interface
+- 🔄 Backup comparison and diff tools
+- 🔄 Encryption and manifest signing
+- 🔄 Scheduled backup automation
+- 🔄 Custom themes and icons
 
-## API Versioning
+## Development
 
-The plugin API uses semantic versioning to ensure compatibility:
+### Project Structure
 
-- **Current API Version**: 1
-- Plugins must declare their required API version in `nova_plugin.toml`
-- Breaking changes will increment the major API version
-- Backward compatibility is maintained within major versions
+```
+nova/
+├── __init__.py
+├── cli.py              # CLI entry point
+├── adb/               # ADB wrapper
+│   ├── client.py      # ADB client implementation
+│   └── device.py      # Device info collection
+├── backup/            # Backup functionality
+│   ├── scanner.py     # File scanning
+│   ├── executor.py    # Backup execution
+│   ├── restore.py     # Restore operations
+│   ├── manifest.py    # Data models
+│   └── storage.py     # Storage layout
+└── gui/               # GTK4 interface
+    └── app.py         # Main GUI application
+```
+
+### Building and Testing
+
+```bash
+# Run tests
+poetry run pytest
+
+# Code formatting
+poetry run black .
+poetry run isort .
+
+# Type checking
+poetry run mypy nova/
+```
 
 ## Configuration
 
-Plugin configurations are stored in:
-- **Linux/macOS**: `~/.config/nova-pc-suite/plugins/`
-- **Windows**: `%APPDATA%/nova-pc-suite/plugins/`
+Backup storage is organized as follows:
+
+```
+~/NovaPcSuite/backups/
+├── {device-id}/
+│   ├── 20240101_120000/
+│   │   ├── manifest.json
+│   │   └── files/
+│   │       └── [device files...]
+│   └── 20240102_130000/
+│       ├── manifest.json
+│       └── files/
+```
+
+## Migration from Rust
+
+This project previously used a Rust-based architecture (see closed PR #72). The decision to pivot to Python was made to:
+
+- Improve development velocity and maintainability
+- Leverage Python's rich ecosystem for GUI and data processing
+- Provide better cross-platform compatibility
+- Enable easier contribution from the community
+
+The core functionality and architecture concepts remain the same, but the implementation is now Python-based with modern tooling.
 
 ## Contributing
 
 We welcome contributions! Please see:
-- [CONTRIBUTING.md](CONTRIBUTING.md) for general contribution guidelines
-- [CONTRIBUTING-PLUGINS.md](CONTRIBUTING-PLUGINS.md) for plugin development
+
+- Create issues for bug reports and feature requests
+- Submit pull requests for improvements
+- Follow the existing code style (Black, isort)
+- Add tests for new functionality
 
 ## License
 
