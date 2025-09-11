@@ -1,0 +1,1 @@
+"""GUI package for GTK4 interface."""

@@ -1,0 +1,8 @@
+# NovaPcSuite Requirements
+# Install with: pip install -r requirements.txt
+# Or use Poetry: poetry install
+
+click>=8.1.7
+PyGObject>=3.46.0
+pydantic>=2.5.0
+rich>=13.7.0
