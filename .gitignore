@@ -1,32 +1,36 @@
-# Rust
+# Build artifacts
 /target/
-**/*.rs.bk
 Cargo.lock
+**/*.rs.bk
+/dist/
+/build/
 
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
 # Logs
 *.log
 
-# Build artifacts
-/dist/
-/build/
+# Backup and restore directories
+/backups/
+/restore_out/
 
-# Plugin configs (user data)
-config/
-.config/
-
-# Temporary files
+# Test and temporary files
+/tmp/
 *.tmp
 *.temp
+
+# Config files (may contain sensitive paths)
+config.yaml
+config/
+.config/
 
 # Documentation builds
 /docs/_build/
