@@ -115,7 +115,11 @@ def save_config(config: NovaConfig, config_path: Optional[Path] = None) -> None:
     yaml.default_flow_style = False
     
     with open(config_path, "w") as f:
-        yaml.dump(config.model_dump(), f)
+        # Convert Path objects to strings for YAML serialization
+        config_dict = config.model_dump()
+        config_dict["backup_root"] = str(config_dict["backup_root"])
+        config_dict["config_dir"] = str(config_dict["config_dir"])
+        yaml.dump(config_dict, f)
 
 
 def get_config() -> NovaConfig:

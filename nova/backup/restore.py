@@ -3,7 +3,7 @@
 import os
 import shutil
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from tqdm import tqdm
 
