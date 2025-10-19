@@ -1,0 +1,64 @@
+name: Label Sync
+# Synchronize repository labels with the centralized definition
+
+on:
+  # Trigger on changes to labels.yml
+  push:
+    branches: [main]
+    paths:
+      - '.github/labels.yml'
+  
+  # Allow manual trigger for immediate sync
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run mode (preview changes without applying)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  # Required permissions for label management
+  issues: write
+  pull-requests: write
+
+jobs:
+  label-sync:
+    name: Sync Repository Labels
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Only need the latest commit for label sync
+          fetch-depth: 1
+      
+      - name: Sync labels
+        uses: EndBug/label-sync@v2
+        with:
+          # Path to the label configuration file
+          config-file: .github/labels.yml
+          
+          # Token with appropriate permissions
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+          # Delete labels that are not in the config file
+          delete-other-labels: false
+          
+          # Dry run mode for testing (preview changes only)
+          dry-run: ${{ github.event.inputs.dry_run == 'true' }}
+          
+          # Enable verbose logging for debugging
+          verbose: true
+
+      - name: Label sync summary
+        if: always()
+        run: |
+          echo "## Label Sync Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dry Run**: ${{ github.event.inputs.dry_run || 'false' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check the action logs above for detailed sync results." >> $GITHUB_STEP_SUMMARY
